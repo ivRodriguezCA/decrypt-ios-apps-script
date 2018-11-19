@@ -149,8 +149,8 @@ def find_decrypted_path():
 
 def transfer_decrypted_app(lport):
 	remote_path = find_decrypted_path()
-	home_path = os.path.expanduser('~/Desktop/')
-	local_path = home_path + 'decrypted-app.ipa'
+	desktop_path = os.path.expanduser('~/Desktop/')
+	local_path = desktop_path + 'decrypted-app.ipa'
 	if remote_path != None:
 		print "[+] Transfering dectypted app to ~/Desktop"
 		sftp = ssh_client.open_sftp()

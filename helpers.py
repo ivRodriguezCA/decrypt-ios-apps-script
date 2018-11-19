@@ -78,10 +78,14 @@ def execute_command(ssh_client, cmd):
                     output_lines.append(line.rstrip())
         except:
             while True:
-                print stdout.readline()
-                output = stdout.readline()
-                if len(output) > 0:
-                    for line in output.split('\n'):
+                output = stdout.read()
+                buffer_str = ''
+                # Remove none ascii characters
+                for c in output:
+                    if ord(c) >= 0 or ord(c) <= 255:
+                        buffer_str += c
+                if len(buffer_str) > 0:
+                    for line in buffer_str.split('\n'):
                         output_lines.append(line.rstrip())
                 if output == '':
                     break

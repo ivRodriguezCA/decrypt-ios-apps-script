@@ -13,18 +13,18 @@ Python script to SSH into your jailbroken device via USB, decrypt an iOS App and
 ## Assumptions
 - You have either [`clutch`](https://github.com/KJCracks/Clutch) or [`bfinject`](https://github.com/BishopFox/bfinject) setup on your device.
 - If you use `clutch`, it should be executable from any path.
-- If you use `bfinject` the scripts and libraries should be in the `/jb/bfinject` directory.
+- If you use `bfinject` the scripts and libraries should be in the `/jb/bfinject` directory. [Here's how to setup `bfinject` this way](https://ivrodriguez.com/reverse-engineer-ios-apps-ios-11-edition-part1/).
 - This script was **only** tested on devices jailbroken with [LiberiOS](http://newosxbook.com/liberios/) and [Electra](https://coolstar.org/electra/), but it might work with other jailbreaks.
 
 ## Usage
 ```
 ios_ss.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i]
-  -l [--lport]: Local SSH port forwarding (has to be an Int)"
-  -p [--password]: (optional) Device's root password (default is `alpine`)"
-  -a [--app]: iOS Application name"
-  -c : Use Clutch to decrypt"
-  -b : Use BFInject to decrypt (default)"
-  -i : Opens a SSH connection with the device and gives an interactive shell, ignoring the decryption task"
+  -l [--lport]: Local SSH port forwarding (has to be an Int)
+  -p [--password]: (optional) Device's root password (default is `alpine`)
+  -a [--app]: iOS Application name
+  -c : Use Clutch to decrypt
+  -b : Use BFInject to decrypt (default)
+  -i : Opens a SSH connection with the device and gives an interactive shell, ignoring the decryption task
 ```
 
 ## Examples
