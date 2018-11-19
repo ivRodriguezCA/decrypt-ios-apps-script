@@ -34,3 +34,5 @@ ios_ss.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i]
 
 - This will give you an interactive shell to communicate with your device over USB:
   - `python ios_ssh.py --lport 2222 -p s3cr37 -i`
+
+![ios_ssh.py screenshot](screenshot.png)
