@@ -16,7 +16,7 @@ root_password = 'alpine'
 app_name = None
 ssh_client = paramiko.SSHClient()
 
-def start_itunnel(lport, interactive, decryption_type):
+def start_itunnel(lport):
 	print "[+] Starting iTunnel on local port " + lport
 	args = ['itnl', '--lport', lport, '--iport', '22']
 	itnl_process = subprocess.Popen(args, stdout=subprocess.PIPE, preexec_fn=os.setsid)
@@ -31,7 +31,6 @@ def start_itunnel(lport, interactive, decryption_type):
 		if "[ERROR]" in output:
 			print "[-] Error starting iTunnel (maybe there's another app using the same port)"
 			sys.exit()
-	ssh_into_device(lport, interactive, decryption_type)
 
 def cleanup():
 	if ssh_client != None and ssh_client.get_transport() != None and ssh_client.get_transport().is_active():
@@ -43,6 +42,8 @@ def cleanup():
 		print "[+] Stopping iTunnel"
 		os.killpg(os.getpgid(itnl_pid), signal.SIGTERM)
 		itnl_pid = None
+
+	sys.exit()
 
 def interactive_shell_callback():
 	cleanup()
@@ -87,8 +88,15 @@ def decrypt_with_bfinject():
 	print "\t# cd /jb/bfinject"
 	print "\t# bash bfinject -P '" + app_name + "' -L decrypt"
 	output = helpers.execute_command(ssh_client, cmd)
+	has_error = False
 	for op in output:
 		print "\t", op
+		if "[!]" in op:
+			has_error = True
+	if has_error:
+		print "[-] Aborting. There was an error with bfinject"
+		cleanup()
+		sys.exit()
 
 def decrypt_with_clutch():
 	print "[+] Decypting application using `clutch`"
@@ -207,7 +215,8 @@ def main(argv):
 				interactive = True
 
 		if lport != None and helpers.isNumber(lport) and app_name != None:
-			start_itunnel(lport, interactive, decryption_type)
+			start_itunnel(lport)
+			ssh_into_device(lport, interactive, decryption_type)
 		else:
 			print_usage()
 			sys.exit()

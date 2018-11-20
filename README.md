@@ -18,7 +18,7 @@ Python script to SSH into your jailbroken device via USB, decrypt an iOS App and
 
 ## Usage
 ```
-ios_ss.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i]
+ios_ssh.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i]
   -l [--lport]: Local SSH port forwarding (has to be an Int)
   -p [--password]: (optional) Device's root password (default is `alpine`)
   -a [--app]: iOS Application name
