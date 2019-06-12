@@ -50,13 +50,14 @@ def isNumber(string):
         return False
 
 def usage():
-    print "\nUsage: ios_ss.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i]"
-    print "\t-l [--lport]: Local SSH port forwarding (has to be an Int)"
-    print "\t-p [--password]: (optional) Device's root password (default is `alpine`)"
-    print "\t-a [--app]: iOS Application name"
-    print "\t-c : Use Clutch to decrypt"
-    print "\t-b : Use BFInject to decrypt (default)"
-    print "\t-i : Opens a SSH connection with the device and gives an interactive shell, ignoring the decryption task"
+    print "\nUsage: ios_ss.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i] [-f]"
+    print "\t-l [--lport]: Local SSH port forwarding (has to be an Int)."
+    print "\t-p [--password]: (optional) Device's root password (default is `alpine`)."
+    print "\t-a [--app]: iOS Application name."
+    print "\t-c : Use Clutch to decrypt."
+    print "\t-b : Use BFInject to decrypt (default)."
+    print "\t-i : Opens a SSH connection with the device and gives an interactive shell, ignoring the decryption task."
+    print "\t-f [--full]: Performs the decryption, decrypted app transfer, unpacking and file organization tasks."
 
 def parse_clutch_apps(apps):
     parsed = {}

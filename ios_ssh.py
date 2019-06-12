@@ -3,7 +3,9 @@
 import subprocess
 import paramiko
 import helpers
+import zipfile
 import signal
+import shutil
 import getopt
 import sys
 import os
@@ -51,7 +53,7 @@ def interactive_shell_callback():
 def print_usage():
 	helpers.usage()
 
-def ssh_into_device(lport, interactive, decryption_type):
+def ssh_into_device(lport, interactive, decryption_type, full_reversing):
 	print "[+] SSH'ing into device"
 	try:
 		ssh_client.load_system_host_keys()
@@ -60,7 +62,7 @@ def ssh_into_device(lport, interactive, decryption_type):
 		if interactive:
 			interactive_shell()
 		else:
-			decrypt_application(decryption_type, lport)
+			decrypt_application(decryption_type, lport, full_reversing)
 			
 	except Exception as e:
 		print "[-] SSH error: ", e
@@ -69,7 +71,7 @@ def ssh_into_device(lport, interactive, decryption_type):
 	finally:
 		cleanup()
 
-def decrypt_application(decryption_type, lport):
+def decrypt_application(decryption_type, lport, full_reversing):
 	if decryption_type == helpers.Decryption.bfinject:
 		decrypt_with_bfinject()
 	elif decryption_type == helpers.Decryption.clutch:
@@ -78,6 +80,9 @@ def decrypt_application(decryption_type, lport):
 	print "[+] Waiting for 20s for decryption to be done"
 	sleep(20)
 	transfer_decrypted_app(lport)
+	if full_reversing:
+		unpack_decrypted()
+		organize_files()
 
 def decrypt_with_bfinject():
 	print "[+] Waiting 10s for you to launch the app on your device"
@@ -160,7 +165,7 @@ def transfer_decrypted_app(lport):
 	desktop_path = os.path.expanduser('~/Desktop/')
 	local_path = desktop_path + 'decrypted-app.ipa'
 	if remote_path != None:
-		print "[+] Transfering dectypted app to ~/Desktop"
+		print "[+] Transfering decrypted app to ~/Desktop"
 		sftp = ssh_client.open_sftp()
 		sftp.get(remote_path, local_path)
 		sftp.close()
@@ -175,14 +180,73 @@ def interactive_shell():
 	channel.invoke_shell()
 	helpers.interactive_shell(channel, interactive_shell_callback)
 
+def unpack_decrypted():
+	print "[+] Extracting the apps' contents"
+	desktop_path = os.path.expanduser('~/Desktop/')
+	local_path = desktop_path + 'decrypted-app.ipa'
+	decrypted_zip_path = desktop_path + 'decrypted-app.zip'
+	extract_folder = desktop_path + 'DecryptedContent/'
+	payload_folder = extract_folder + 'Payload/'
+	# Copy the .ipa to a .zip
+	os.popen('cp ' + local_path + ' ' + decrypted_zip_path)
+	# Create a new folder to extract its content
+	os.mkdir(extract_folder)
+	# Extract .zip contents
+	zip_ref = zipfile.ZipFile(decrypted_zip_path, 'r')
+	zip_ref.extractall(extract_folder)
+	zip_ref.close()
+	files = os.listdir(payload_folder)
+	# Move all the files within the .app
+	for file in files:
+		if '.app' in file:
+			app_payload_path = payload_folder + file
+			os.popen('mv ' + app_payload_path + '/* ' + extract_folder)
+			os.popen('rm -rf ' + app_payload_path)
+			break
+	# Remove .zip file
+	os.popen('rm  ' + decrypted_zip_path)
+
+def organize_files():
+	print "[+] Starting to organize files."
+	desktop_path = os.path.expanduser('~/Desktop/')
+	extract_folder = desktop_path + 'DecryptedContent/'
+	# Create media folder and move files
+	media_path = extract_folder + 'media/'
+	os.mkdir(media_path)
+	os.popen('mv ' + extract_folder + '*.png ' + media_path)
+	os.popen('mv ' + extract_folder + '*.jpg ' + media_path)
+	os.popen('mv ' + extract_folder + '*.jpeg ' + media_path)
+	os.popen('mv ' + extract_folder + '*.mov ' + media_path)
+	os.popen('mv ' + extract_folder + '*.mp3 ' + media_path)
+	os.popen('mv ' + extract_folder + '*.mp4 ' + media_path)
+	# Create nibs folder and move files
+	nibs_path = extract_folder + 'nibs/'
+	os.mkdir(nibs_path)
+	os.popen('mv ' + extract_folder + '*.nib ' + nibs_path)
+	os.popen('mv ' + extract_folder + '*.storyboardc ' + nibs_path)
+	# Create json folder and move files
+	jsons_path = extract_folder + 'jsons/'
+	os.mkdir(jsons_path)
+	os.popen('mv ' + extract_folder + '*.json ' + jsons_path)
+	# Create plist folder and move files
+	plists_path = extract_folder + 'plists/'
+	os.mkdir(plists_path)
+	os.popen('mv ' + extract_folder + '*.plist ' + plists_path)
+	# Create html folder and move files
+	htmls_path = extract_folder + 'htmls/'
+	os.mkdir(htmls_path)
+	os.popen('mv ' + extract_folder + '*.html ' + htmls_path)
+	print "[+] Done organizing files."
+
 def main(argv):
 	try:
 		lport = None
 		interactive = False
+		full_reversing = False
 		decryption_type = helpers.Decryption(0)
 
-		options = "hl:p:a:cbi"
-		long_options = ["lport=","password=","app="]
+		options = "hl:p:a:cbif"
+		long_options = ["lport=","password=","app=","full="]
 		opts, args = getopt.getopt(argv, options, long_options)
 
 		#Parsing command line options
@@ -204,6 +268,8 @@ def main(argv):
 				decryption_type = helpers.Decryption(0)
 			elif opt == '-i':
 				interactive = True
+			elif opt in ("-f", "--full"):
+				full_reversing = True
 
 		#Checking the reminder of the command line options
 		if len(args) > 0:
@@ -214,9 +280,15 @@ def main(argv):
 			elif args[-1] == '-i':
 				interactive = True
 
+		# desktop_path = os.path.expanduser('~/Desktop/')
+		# extract_folder = desktop_path + 'DecryptedContent/'
+		# media_path = extract_folder + 'media/'
+		# print 'mv ' + extract_folder + '*.png ' + media_path
+		# return
+
 		if lport != None and helpers.isNumber(lport) and app_name != None:
 			start_itunnel(lport)
-			ssh_into_device(lport, interactive, decryption_type)
+			ssh_into_device(lport, interactive, decryption_type, full_reversing)
 		else:
 			print_usage()
 			sys.exit()
