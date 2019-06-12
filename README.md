@@ -25,6 +25,7 @@ ios_ssh.py -l <port> [-p <password>] -a <app_name> [-c|-b] [-i]
   -c : Use Clutch to decrypt
   -b : Use BFInject to decrypt (default)
   -i : Opens a SSH connection with the device and gives an interactive shell, ignoring the decryption task
+  -f [--full]: Performs the decryption, decrypted app transfer, unpacking and file organization tasks.
 ```
 
 ## Examples
