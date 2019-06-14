@@ -83,6 +83,7 @@ def decrypt_application(decryption_type, lport, full_reversing):
 	if full_reversing:
 		unpack_decrypted()
 		organize_files()
+		convert_plists()
 
 def decrypt_with_bfinject():
 	print "[+] Waiting 10s for you to launch the app on your device"
@@ -237,6 +238,15 @@ def organize_files():
 	os.mkdir(htmls_path)
 	os.popen('mv ' + extract_folder + '*.html ' + htmls_path)
 	print "[+] Done organizing files."
+
+def convert_plists():
+	desktop_path = os.path.expanduser('~/Desktop/')
+	extract_folder = desktop_path + 'DecryptedContent/plists'
+	files = os.listdir(extract_folder)
+	if len(files) > 0:
+		print "[+] converting .plist files to xml format."
+	for file in files:
+		os.popen('plutil -convert xml1 ' + file)
 
 def main(argv):
 	try:
